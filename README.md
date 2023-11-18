@@ -1,3 +1,4 @@
+# Sprin2_Task01_Data_Structure_SQL
 # Database Modeling - Optics and Pizzeria Exercises
 
 This repository presents the database designs for two distinct scenarios: an optician named "Cul d'Ampolla" and a pizzeria that facilitates online ordering.
