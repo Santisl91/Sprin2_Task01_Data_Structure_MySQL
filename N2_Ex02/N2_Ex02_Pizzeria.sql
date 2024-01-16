@@ -5,194 +5,168 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema mydb
--- -----------------------------------------------------
--- -----------------------------------------------------
--- Schema Pizzeria
+-- Schema pizzeria
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema Pizzeria
+-- Schema pizzeria
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `Pizzeria` ;
-USE `Pizzeria` ;
+CREATE SCHEMA IF NOT EXISTS `pizzeria` DEFAULT CHARACTER SET utf8 ;
+USE `pizzeria` ;
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`Hamburguesa`
+-- Table `pizzeria`.`provincia`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`Hamburguesa` (
-  `hamburguesa_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) COLLATE 'utf8mb3_bin' NOT NULL,
-  `description` VARCHAR(150) COLLATE 'utf8mb3_bin' NOT NULL,
-  `image` VARCHAR(100) COLLATE 'utf8mb3_bin' NOT NULL,
-  `price` FLOAT NOT NULL,
-  PRIMARY KEY (`hamburguesa_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`provincia` (
+  `provincia_id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`provincia_id`))
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`bebida`
+-- Table `pizzeria`.`localidad`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`bebida` (
-  `bebida_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) COLLATE 'utf8mb3_bin' NOT NULL,
-  `description` VARCHAR(150) COLLATE 'utf8mb3_bin' NOT NULL,
-  `image` VARCHAR(100) COLLATE 'utf8mb3_bin' NOT NULL,
-  `price` FLOAT NOT NULL,
-  PRIMARY KEY (`bebida_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`localidad` (
+  `localidad_id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NOT NULL,
+  `provincia_provincia_id` INT NOT NULL,
+  PRIMARY KEY (`localidad_id`, `provincia_provincia_id`),
+  INDEX `fk_localidad_provincia1_idx` (`provincia_provincia_id` ASC) VISIBLE,
+  CONSTRAINT `fk_localidad_provincia1`
+    FOREIGN KEY (`provincia_provincia_id`)
+    REFERENCES `pizzeria`.`provincia` (`provincia_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`province`
+-- Table `pizzeria`.`cliente`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`province` (
-  `province_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) COLLATE 'utf8mb3_bin' NOT NULL,
-  PRIMARY KEY (`province_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`cliente` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NOT NULL,
+  `apellidos` VARCHAR(45) NOT NULL,
+  `direccion` VARCHAR(45) NOT NULL,
+  `cp` VARCHAR(5) NOT NULL,
+  `telefono` VARCHAR(45) NOT NULL,
+  `localidad_localidad_id` INT NOT NULL,
+  PRIMARY KEY (`id`, `localidad_localidad_id`),
+  INDEX `fk_cliente_localidad_idx` (`localidad_localidad_id` ASC) VISIBLE,
+  CONSTRAINT `fk_cliente_localidad`
+    FOREIGN KEY (`localidad_localidad_id`)
+    REFERENCES `pizzeria`.`localidad` (`localidad_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`location`
+-- Table `pizzeria`.`empleado`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`location` (
-  `location_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) COLLATE 'utf8mb3_bin' NOT NULL,
-  `province_id` INT NULL DEFAULT NULL,
-  PRIMARY KEY (`location_id`),
-  INDEX `province_id` (`province_id` ASC) VISIBLE,
-  CONSTRAINT `location_ibfk_1`
-    FOREIGN KEY (`province_id`)
-    REFERENCES `Pizzeria`.`province` (`province_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`empleado` (
+  `empleado_id` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(45) NOT NULL,
+  `apellidos` VARCHAR(45) NOT NULL,
+  `nif` VARCHAR(45) NOT NULL,
+  `telefono` INT NOT NULL,
+  `cargo` ENUM("Cocinero", "Repartidor") NOT NULL,
+  PRIMARY KEY (`empleado_id`),
+  UNIQUE INDEX `nif_UNIQUE` (`nif` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`store`
+-- Table `pizzeria`.`tienda`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`store` (
-  `store_id` INT NOT NULL AUTO_INCREMENT,
-  `address` VARCHAR(100) COLLATE 'utf8mb3_bin' NOT NULL,
-  `postal_code` INT NOT NULL,
-  `location_id` INT NULL DEFAULT NULL,
-  PRIMARY KEY (`store_id`),
-  INDEX `location_id` (`location_id` ASC) VISIBLE,
-  CONSTRAINT `store_ibfk_1`
-    FOREIGN KEY (`location_id`)
-    REFERENCES `Pizzeria`.`location` (`location_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`tienda` (
+  `tienda_id` INT NOT NULL AUTO_INCREMENT,
+  `direccion` VARCHAR(45) NOT NULL,
+  `cp` VARCHAR(45) NOT NULL,
+  `tienda_localidad_id` INT NOT NULL,
+  `tienda_localidad_provincia_id` INT NOT NULL,
+  PRIMARY KEY (`tienda_id`, `tienda_localidad_id`, `tienda_localidad_provincia_id`),
+  INDEX `fk_tienda_localidad1_idx` (`tienda_localidad_id` ASC, `tienda_localidad_provincia_id` ASC) VISIBLE,
+  CONSTRAINT `fk_tienda_localidad1`
+    FOREIGN KEY (`tienda_localidad_id` , `tienda_localidad_provincia_id`)
+    REFERENCES `pizzeria`.`localidad` (`localidad_id` , `provincia_provincia_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`employee`
+-- Table `pizzeria`.`pedido`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`employee` (
-  `employee_id` INT NOT NULL AUTO_INCREMENT,
-  `first_name` VARCHAR(50) COLLATE 'utf8mb3_bin' NOT NULL,
-  `sure_name` VARCHAR(50) COLLATE 'utf8mb3_bin' NOT NULL,
-  `nif` VARCHAR(10) COLLATE 'utf8mb3_bin' NOT NULL,
-  `phone_number` INT NOT NULL,
-  `employee_type` ENUM('deliveryman', 'cook') COLLATE 'utf8mb3_bin' NULL DEFAULT NULL,
-  `store_id` INT NULL DEFAULT NULL,
-  PRIMARY KEY (`employee_id`),
-  INDEX `store_id` (`store_id` ASC) VISIBLE,
-  CONSTRAINT `employee_ibfk_1`
-    FOREIGN KEY (`store_id`)
-    REFERENCES `Pizzeria`.`store` (`store_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`pedido` (
+  `pedido_id` INT NOT NULL AUTO_INCREMENT,
+  `fechahora` DATETIME NOT NULL,
+  `recogida` ENUM("tienda", "domicilio") NOT NULL,
+  `cantidad` INT NOT NULL,
+  `total` FLOAT NOT NULL,
+  `cliente_id` INT NOT NULL,
+  `cliente_localidad_localidad_id` INT NOT NULL,
+  `repartidor_pedido_id` INT NOT NULL,
+  `pedido_tienda_id` INT NOT NULL,
+  `tienda_tienda_localidad_id` INT NOT NULL,
+  `tienda_tienda_localidad_provincia_id` INT NOT NULL,
+  PRIMARY KEY (`pedido_id`, `pedido_tienda_id`, `tienda_tienda_localidad_id`, `tienda_tienda_localidad_provincia_id`),
+  INDEX `fk_pedido_cliente1_idx` (`cliente_id` ASC, `cliente_localidad_localidad_id` ASC) VISIBLE,
+  INDEX `fk_pedido_empleado1_idx` (`repartidor_pedido_id` ASC) VISIBLE,
+  INDEX `fk_pedido_tienda1_idx` (`pedido_tienda_id` ASC, `tienda_tienda_localidad_id` ASC, `tienda_tienda_localidad_provincia_id` ASC) VISIBLE,
+  CONSTRAINT `fk_pedido_cliente1`
+    FOREIGN KEY (`cliente_id` , `cliente_localidad_localidad_id`)
+    REFERENCES `pizzeria`.`cliente` (`id` , `localidad_localidad_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_pedido_empleado1`
+    FOREIGN KEY (`repartidor_pedido_id`)
+    REFERENCES `pizzeria`.`empleado` (`empleado_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_pedido_tienda1`
+    FOREIGN KEY (`pedido_tienda_id` , `tienda_tienda_localidad_id` , `tienda_tienda_localidad_provincia_id`)
+    REFERENCES `pizzeria`.`tienda` (`tienda_id` , `tienda_localidad_id` , `tienda_localidad_provincia_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`pizza`
+-- Table `pizzeria`.`categoria`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`pizza` (
-  `pizza_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) COLLATE 'utf8mb3_bin' NOT NULL,
-  `description` VARCHAR(150) COLLATE 'utf8mb3_bin' NOT NULL,
-  `image` VARCHAR(100) COLLATE 'utf8mb3_bin' NOT NULL,
-  `price` FLOAT NOT NULL,
-  PRIMARY KEY (`pizza_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`categoria` (
+  `categoria_id` INT NOT NULL,
+  `nombre` VARCHAR(45) NOT NULL COMMENT 'Puede cambiar de nombre a lo largo del año',
+  PRIMARY KEY (`categoria_id`))
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Pizzeria`.`product_order`
+-- Table `pizzeria`.`producto`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`product_order` (
-  `order_id` INT NOT NULL AUTO_INCREMENT,
-  `date_time` DATETIME NOT NULL,
-  `delivery_type` ENUM('delivey', 'pick_up') COLLATE 'utf8mb3_bin' NOT NULL,
-  `quantity` INT NOT NULL,
-  `total_price` FLOAT NOT NULL,
-  `employee_id` INT NULL DEFAULT NULL,
-  `store_id` INT NULL DEFAULT NULL,
-  `cantidad_hamburguesas` INT NULL DEFAULT NULL,
-  `cantidad_bebidas` INT NULL DEFAULT NULL,
-  `cantidad_pizzas` INT NULL DEFAULT NULL,
-  `hamburguesa_id` INT NULL DEFAULT NULL,
-  `bebida_id` INT NULL DEFAULT NULL,
-  `pizza_id` INT NULL DEFAULT NULL,
-  PRIMARY KEY (`order_id`),
-  INDEX `FK_employee_id` (`employee_id` ASC) VISIBLE,
-  INDEX `FK_store_id` (`store_id` ASC) VISIBLE,
-  INDEX `hamburguesaID_FK` (`hamburguesa_id` ASC) VISIBLE,
-  INDEX `pizzaID_FK` (`pizza_id` ASC) VISIBLE,
-  INDEX `bebidaID_FK` (`bebida_id` ASC) VISIBLE,
-  CONSTRAINT `bebidaID_FK`
-    FOREIGN KEY (`bebida_id`)
-    REFERENCES `Pizzeria`.`bebida` (`bebida_id`),
-  CONSTRAINT `FK_employee_id`
-    FOREIGN KEY (`employee_id`)
-    REFERENCES `Pizzeria`.`employee` (`employee_id`),
-  CONSTRAINT `FK_store_id`
-    FOREIGN KEY (`store_id`)
-    REFERENCES `Pizzeria`.`store` (`store_id`),
-  CONSTRAINT `hamburguesaID_FK`
-    FOREIGN KEY (`hamburguesa_id`)
-    REFERENCES `Pizzeria`.`Hamburguesa` (`hamburguesa_id`),
-  CONSTRAINT `pizzaID_FK`
-    FOREIGN KEY (`pizza_id`)
-    REFERENCES `Pizzeria`.`pizza` (`pizza_id`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `Pizzeria`.`customer`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`customer` (
-  `customer_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) COLLATE 'utf8mb3_bin' NOT NULL,
-  `last_name` VARCHAR(45) COLLATE 'utf8mb3_bin' NOT NULL,
-  `address` VARCHAR(100) COLLATE 'utf8mb3_bin' NOT NULL,
-  `post_code` INT NOT NULL,
-  `location_id` INT NULL DEFAULT NULL,
-  `phone_number` INT NULL DEFAULT NULL,
-  `order_id` INT NULL DEFAULT NULL,
-  PRIMARY KEY (`customer_id`),
-  INDEX `location_id` (`location_id` ASC) VISIBLE,
-  INDEX `FK_order_id` (`order_id` ASC) VISIBLE,
-  CONSTRAINT `customer_ibfk_1`
-    FOREIGN KEY (`location_id`)
-    REFERENCES `Pizzeria`.`location` (`location_id`),
-  CONSTRAINT `FK_order_id`
-    FOREIGN KEY (`order_id`)
-    REFERENCES `Pizzeria`.`product_order` (`order_id`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `Pizzeria`.`pizza_category`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Pizzeria`.`pizza_category` (
-  `pizza_category_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) COLLATE 'utf8mb3_bin' NOT NULL,
-  `pizza_id` INT NULL DEFAULT NULL,
-  PRIMARY KEY (`pizza_category_id`),
-  INDEX `pizza_id` (`pizza_id` ASC) VISIBLE,
-  CONSTRAINT `pizza_category_ibfk_1`
-    FOREIGN KEY (`pizza_id`)
-    REFERENCES `Pizzeria`.`pizza` (`pizza_id`))
+CREATE TABLE IF NOT EXISTS `pizzeria`.`producto` (
+  `producto_id` INT NOT NULL,
+  `nombre` VARCHAR(45) NOT NULL,
+  `descripcion` VARCHAR(45) NULL,
+  `imagen` BLOB NULL,
+  `precio` FLOAT NOT NULL,
+  `pedido_pedido_id` INT NOT NULL,
+  `categoria_producto_id` INT NOT NULL,
+  PRIMARY KEY (`producto_id`, `pedido_pedido_id`, `categoria_producto_id`),
+  INDEX `fk_producto_pedido1_idx` (`pedido_pedido_id` ASC) VISIBLE,
+  INDEX `fk_producto_categoria1_idx` (`categoria_producto_id` ASC) VISIBLE,
+  CONSTRAINT `fk_producto_pedido1`
+    FOREIGN KEY (`pedido_pedido_id`)
+    REFERENCES `pizzeria`.`pedido` (`pedido_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_producto_categoria1`
+    FOREIGN KEY (`categoria_producto_id`)
+    REFERENCES `pizzeria`.`categoria` (`categoria_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
 
